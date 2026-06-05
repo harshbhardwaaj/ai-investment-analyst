@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from routers import financials
 
 app = FastAPI(title="AI Investment Analyst")
 
@@ -13,6 +14,8 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
+app.include_router(financials.router, prefix="/api", tags=["financials"])
 
 @app.get("/")
 def root():
