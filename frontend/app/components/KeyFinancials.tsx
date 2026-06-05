@@ -22,10 +22,10 @@ const rows = [
 export default function KeyFinancials({ company }: { company: CompanyData }) {
     return (
         <div className="mb-8">
-            <h3 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-4">
+            <h3 className="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-4">
                 Key Financials
             </h3>
-            <div className="divide-y divide-gray-100 border border-gray-100 rounded-lg overflow-hidden">
+            <div className="divide-y divide-gray-100 dark:divide-gray-800 border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden">
                 {rows.map((row) => {
                     const value = company[row.key] as number | null
                     const formatted =
@@ -36,9 +36,9 @@ export default function KeyFinancials({ company }: { company: CompanyData }) {
                                 : value?.toFixed(2) ?? "N/A"
 
                     return (
-                        <div key={row.label} className="flex justify-between px-4 py-3 bg-white">
-                            <span className="text-sm text-gray-600">{row.label}</span>
-                            <span className="text-sm font-medium text-gray-900">{formatted}</span>
+                        <div key={row.label} className="flex justify-between px-4 py-3 bg-white dark:bg-gray-950">
+                            <span className="text-sm text-gray-600 dark:text-gray-400">{row.label}</span>
+                            <span className="text-sm font-medium text-gray-900 dark:text-gray-100">{formatted}</span>
                         </div>
                     )
                 })}

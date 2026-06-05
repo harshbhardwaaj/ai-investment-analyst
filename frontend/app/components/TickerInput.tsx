@@ -29,12 +29,12 @@ export default function TickerInput({ onSubmit, loading, error }: TickerInputPro
                     onChange={(e) => setTicker(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
                     placeholder="Enter ticker (e.g. SAP.DE, AAPL, BMW.DE)"
-                    className="flex-1 px-4 py-3 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 focus:border-transparent"
+                    className="flex-1 px-4 py-3 border border-gray-200 dark:border-gray-700 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-gray-900 dark:focus:ring-gray-400 focus:border-transparent"
                 />
                 <button
                     onClick={handleSubmit}
                     disabled={loading || !ticker.trim()}
-                    className="px-6 py-3 bg-gray-900 text-white text-sm font-medium rounded-lg disabled:opacity-40 hover:bg-gray-700 transition-colors"
+                    className="px-6 py-3 bg-gray-900 dark:bg-gray-100 text-white dark:text-gray-900 text-sm font-medium rounded-lg disabled:opacity-40 hover:bg-gray-700 dark:hover:bg-gray-300 transition-colors"
                 >
                     {loading ? "Generating..." : "Generate Memo"}
                 </button>
@@ -47,7 +47,7 @@ export default function TickerInput({ onSubmit, loading, error }: TickerInputPro
                         value={ebitda}
                         onChange={(e) => setEbitda(e.target.value)}
                         placeholder="Enter EBITDA manually (in absolute value)"
-                        className="flex-1 px-4 py-3 border border-amber-300 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400"
+                        className="flex-1 px-4 py-3 border border-amber-300 dark:border-amber-600 rounded-lg text-sm bg-white dark:bg-gray-900 text-gray-900 dark:text-gray-100 focus:outline-none focus:ring-2 focus:ring-amber-400"
                     />
                     <button
                         onClick={() => { setShowEbitda(true); handleSubmit() }}
@@ -59,11 +59,11 @@ export default function TickerInput({ onSubmit, loading, error }: TickerInputPro
             )}
 
             {error && !isEbitdaMissing && (
-                <p className="mt-2 text-sm text-red-600">{error}</p>
+                <p className="mt-2 text-sm text-red-600 dark:text-red-400">{error}</p>
             )}
 
             {isEbitdaMissing && (
-                <p className="mt-2 text-sm text-amber-600">
+                <p className="mt-2 text-sm text-amber-600 dark:text-amber-400">
                     EBITDA not available for this ticker. Enter it manually above to continue.
                 </p>
             )}
