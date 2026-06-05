@@ -53,9 +53,6 @@ export default function CompanySnapshot({ company }: { company: CompanyData }) {
                     className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
                     style={{
                         display: "-webkit-box",
-                        WebkitLineClamp: 3,
-                        WebkitBoxOrient: "vertical",
-                        overflow: "hidden",
                     }}
                 >
                     {company.description}
