@@ -49,7 +49,15 @@ export default function CompanySnapshot({ company }: { company: CompanyData }) {
             </div>
 
             <div className="border-l-4 border-gray-200 dark:border-gray-700 pl-4">
-                <p className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed line-clamp-3">
+                <p
+                    className="text-sm text-gray-600 dark:text-gray-400 leading-relaxed"
+                    style={{
+                        display: "-webkit-box",
+                        WebkitLineClamp: 3,
+                        WebkitBoxOrient: "vertical",
+                        overflow: "hidden",
+                    }}
+                >
                     {company.description}
                 </p>
             </div>
