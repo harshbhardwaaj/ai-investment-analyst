@@ -1,6 +1,6 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from routers import financials, thesis
+from routers import financials, thesis, calculations
 
 app = FastAPI(title="AI Investment Analyst")
 
@@ -18,6 +18,7 @@ app.add_middleware(
 
 app.include_router(financials.router, prefix="/api", tags=["financials"])
 app.include_router(thesis.router, prefix="/api", tags=["thesis"])
+app.include_router(calculations.router, prefix="/api", tags=["calculations"])
 
 @app.get("/")
 def root():
