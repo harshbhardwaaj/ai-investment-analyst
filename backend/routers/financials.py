@@ -73,3 +73,32 @@ def get_company_data(ticker: str, ebitda_override: float = None):
         raise
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Error fetching data for {ticker}: {str(e)}")
+
+@router.get("/comps/{ticker}")
+def get_comps(ticker: str, sector: str = "", industry: str = ""):
+    try:
+        from routers.thesis import get_peer_tickers
+        peers_response = get_peer_tickers(ticker, sector, industry)
+        peer_tickers = peers_response["peers"]
+
+        comps = []
+        for peer in peer_tickers:
+            try:
+                stock = yf.Ticker(peer)
+                info = stock.info
+                if not info or info.get("quoteType") is None:
+                    continue
+                comps.append({
+                    "ticker": peer,
+                    "name": info.get("shortName") or peer,
+                    "ev_ebitda": safe_float(info.get("enterpriseToEbitda")) or None,
+                    "pe_ratio": safe_float(info.get("trailingPE")) or None,
+                    "ev_revenue": safe_float(info.get("enterpriseToRevenue")) or None,
+                })
+            except Exception:
+                continue
+
+        return {"comps": comps}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Comps fetch failed: {str(e)}")

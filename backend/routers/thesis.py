@@ -10,6 +10,42 @@ load_dotenv()
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
 
+@router.get("/peers/{ticker}")
+def get_peer_tickers(ticker: str, sector: str = "", industry: str = ""):
+    try:
+        # Hardcoded peers for demo company
+        if ticker.upper() == "SAP.DE":
+            return {"peers": ["ORCL", "CRM", "MSFT", "NOW", "WDAY"]}
+
+        prompt = f"""You are a financial analyst. Give me exactly 4 comparable public company tickers for:
+Company ticker: {ticker}
+Sector: {sector}
+Industry: {industry}
+
+Return ONLY a JSON object like this, no other text:
+{{"peers": ["TICK1", "TICK2", "TICK3", "TICK4"]}}
+
+Rules:
+- Use valid Yahoo Finance ticker symbols
+- Pick genuine sector peers of similar size
+- No markdown, no explanation"""
+
+        message = client.messages.create(
+            model="claude-haiku-4-5-20251001",
+            max_tokens=100,
+            messages=[{"role": "user", "content": prompt}]
+        )
+
+        import re
+        response_text = message.content[0].text.strip()
+        response_text = re.sub(r'```json\s*', '', response_text)
+        response_text = re.sub(r'```\s*', '', response_text)
+        data = json.loads(response_text.strip())
+        return data
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Peer suggestion failed: {str(e)}")
+
 @router.post("/thesis", response_model=ThesisResult)
 def generate_thesis(company: CompanyData):
     try:

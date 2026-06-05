@@ -25,13 +25,39 @@ def root():
     return {"status": "AI Investment Analyst API is running"}
 
 @app.get("/api/memo/{ticker}")
-def get_memo(ticker: str, ebitda_override: float = None):
+def get_memo(
+        ticker: str,
+        ebitda_override: float = None,
+        entry_multiple: float = 10.0,
+        debt_pct: float = 0.6,
+        interest_rate: float = 0.07,
+        exit_multiple: float = 12.0,
+        hold_period: int = 5
+):
     company = financials.get_company_data(ticker, ebitda_override)
     investment_thesis = thesis.generate_thesis(company)
+
+    comps_data = None
+    try:
+        comps_response = financials.get_comps(ticker, company.sector, company.industry)
+        comps_data = comps_response["comps"]
+    except Exception:
+        pass
+
+    calc_data = None
+    try:
+        calc_data = calculations.get_calculations(
+            ticker, entry_multiple, debt_pct,
+            interest_rate, exit_multiple, hold_period, ebitda_override
+        )
+    except Exception:
+        pass
+
     return {
         "company": company,
         "thesis": investment_thesis,
-        "comps": None,
-        "dcf": None,
-        "lbo": None
+        "comps": comps_data,
+        "dcf": calc_data["dcf"] if calc_data else None,
+        "lbo": calc_data["lbo"] if calc_data else None,
+        "wacc": calc_data["wacc"] if calc_data else None,
     }
