@@ -62,9 +62,24 @@ export default function Home() {
     }
   }
 
-  const handleLboRecalculate = (params: typeof lboParams) => {
+  const handleLboRecalculate = async (params: typeof lboParams) => {
     setLboParams(params)
-    handleFetch(currentTicker, undefined, params)
+    try {
+      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+      const urlParams = new URLSearchParams({
+        entry_multiple: params.entry_multiple.toString(),
+        debt_pct: params.debt_pct.toString(),
+        interest_rate: params.interest_rate.toString(),
+        exit_multiple: params.exit_multiple.toString(),
+        hold_period: params.hold_period.toString(),
+      })
+      const res = await fetch(`${API_BASE}/api/calculations/${currentTicker}?${urlParams}`)
+      if (!res.ok) return
+      const data = await res.json()
+      setMemo(prev => prev ? { ...prev, lbo: data.lbo } : prev)
+    } catch (err) {
+      console.error("LBO recalculate failed:", err)
+    }
   }
 
   return (
@@ -88,17 +103,6 @@ export default function Home() {
 
           {memo && !loading && (
               <div>
-                <div className="border-b border-gray-100 dark:border-gray-800 mb-8 pb-2 flex items-center justify-between">
-                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
-                    Investment Memo
-                  </p>
-                  <p className="text-xs text-gray-400 dark:text-gray-500">
-                    {new Date().toLocaleDateString("en-GB", {
-                      day: "numeric", month: "long", year: "numeric"
-                    })}
-                  </p>
-                </div>
-
                 <div className="border-b border-gray-100 dark:border-gray-800 mb-8 pb-2 flex items-center justify-between">
                   <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
                     Investment Memo
