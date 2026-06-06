@@ -1,6 +1,7 @@
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from routers import financials, thesis, calculations
+import json as json_lib
 
 app = FastAPI(title="AI Investment Analyst")
 
@@ -23,6 +24,22 @@ app.include_router(calculations.router, prefix="/api", tags=["calculations"])
 @app.get("/")
 def root():
     return {"status": "AI Investment Analyst API is running"}
+
+@app.get("/api/precedent-transactions/{sector}")
+def get_precedent_transactions(sector: str):
+    try:
+        with open("data/precedent_transactions.json", "r") as f:
+            data = json_lib.load(f)
+
+        # Try exact match first, then fall back to Technology
+        transactions = data.get(sector, data.get("Technology", []))
+
+        return {
+            "transactions": transactions,
+            "source": "Manually sourced. Production use would require Capital IQ or Mergermarket."
+        }
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 @app.get("/api/memo/{ticker}")
 def get_memo(
@@ -53,6 +70,15 @@ def get_memo(
     except Exception:
         pass
 
+    precedent_txns = None
+    try:
+        with open("data/precedent_transactions.json", "r") as f:
+            txn_data = json_lib.load(f)
+        sector = company.sector
+        precedent_txns = txn_data.get(sector, txn_data.get("Technology", []))
+    except Exception:
+        pass
+
     return {
         "company": company,
         "thesis": investment_thesis,
@@ -60,4 +86,5 @@ def get_memo(
         "dcf": calc_data["dcf"] if calc_data else None,
         "lbo": calc_data["lbo"] if calc_data else None,
         "wacc": calc_data["wacc"] if calc_data else None,
+        "precedent_transactions": precedent_txns,
     }

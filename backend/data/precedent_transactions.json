@@ -1,0 +1,54 @@
+{
+  "Technology": [
+    {
+      "target": "VMware",
+      "acquirer": "Broadcom",
+      "year": 2023,
+      "deal_value_bn": 69.0,
+      "ev_ebitda": 18.2,
+      "currency": "USD"
+    },
+    {
+      "target": "Cerner",
+      "acquirer": "Oracle",
+      "year": 2022,
+      "deal_value_bn": 28.3,
+      "ev_ebitda": 20.2,
+      "currency": "USD"
+    },
+    {
+      "target": "Citrix Systems",
+      "acquirer": "Vista Equity / Elliott",
+      "year": 2022,
+      "deal_value_bn": 16.5,
+      "ev_ebitda": 12.7,
+      "currency": "USD"
+    },
+    {
+      "target": "Tableau Software",
+      "acquirer": "Salesforce",
+      "year": 2019,
+      "deal_value_bn": 15.7,
+      "ev_ebitda": 44.1,
+      "currency": "USD"
+    },
+    {
+      "target": "Red Hat",
+      "acquirer": "IBM",
+      "year": 2019,
+      "deal_value_bn": 34.0,
+      "ev_ebitda": 28.6,
+      "currency": "USD"
+    }
+  ],
+  "Consumer Cyclical": [
+    {
+      "target": "Manpower Group IT division",
+      "acquirer": "Various PE",
+      "year": 2021,
+      "deal_value_bn": 2.1,
+      "ev_ebitda": 11.2,
+      "currency": "USD"
+    }
+  ]
+}

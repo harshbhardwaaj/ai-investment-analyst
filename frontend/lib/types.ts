@@ -74,6 +74,15 @@ export interface ThesisResult {
     verdict: string
 }
 
+export interface PrecedentTransaction {
+    target: string
+    acquirer: string
+    year: number
+    deal_value_bn: number
+    ev_ebitda: number
+    currency: string
+}
+
 export interface MemoResponse {
     company: CompanyData
     thesis: ThesisResult
@@ -81,4 +90,5 @@ export interface MemoResponse {
     dcf: DCFResult | null
     lbo: LBOResult | null
     wacc: WACCData | null
+    precedent_transactions: PrecedentTransaction[] | null
 }

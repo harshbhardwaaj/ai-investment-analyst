@@ -9,6 +9,7 @@ import TickerInput from "./components/TickerInput"
 import TradingComps from "./components/TradingComps"
 import DCFValuation from "./components/DCFValuation"
 import LBOScreen from "./components/LBOScreen"
+import PrecedentTxns from "./components/PrecedentTxns"
 
 const DEMO_TICKER = "SAP.DE"
 
@@ -111,6 +112,13 @@ export default function Home() {
                           targetPe={memo.company.current_price / ((memo.company.ebitda * 0.7) / (memo.company.market_cap / memo.company.current_price))}
                           targetEvRevenue={(memo.company.market_cap + memo.company.total_debt) / memo.company.revenue}
                       />
+                      <div className="border-t border-gray-100 dark:border-gray-800 my-6" />
+                    </>
+                )}
+
+                {memo.precedent_transactions && memo.precedent_transactions.length > 0 && (
+                    <>
+                      <PrecedentTxns transactions={memo.precedent_transactions} />
                       <div className="border-t border-gray-100 dark:border-gray-800 my-6" />
                     </>
                 )}
