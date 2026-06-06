@@ -39,6 +39,16 @@ export default function DCFValuation({ dcf }: { dcf: DCFResult }) {
                 </div>
             </div>
 
+            {/* Extreme valuation disclaimer */}
+            {(dcf.upside_downside_pct < -50 || dcf.upside_downside_pct > 100) && (
+                <div className="flex gap-2 items-start mb-6 rounded-lg bg-amber-50 dark:bg-amber-950/40 border border-amber-200 dark:border-amber-800 px-4 py-3">
+                    <span className="text-amber-500 dark:text-amber-400 text-sm mt-px">⚠</span>
+                    <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed">
+                        Extreme DCF values typically reflect growth expectations or optionality not captured by a standard 5-year model. The market may be pricing in factors beyond near-term cash flows.
+                    </p>
+                </div>
+            )}
+
             {/* WACC decomposition */}
             <div className="border border-gray-100 dark:border-gray-800 rounded-lg overflow-hidden mb-6">
                 <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2">
