@@ -50,6 +50,12 @@ def get_company_data(ticker: str, ebitda_override: float = None):
             info.get("currentPrice") or info.get("regularMarketPrice")
         )
 
+        raw_growth = info.get("revenueGrowth")
+        if raw_growth is not None:
+            revenue_growth = max(0.03, min(0.25, float(raw_growth)))
+        else:
+            revenue_growth = 0.08
+
         return CompanyData(
             ticker=ticker.upper(),
             name=info.get("longName") or info.get("shortName") or ticker,
@@ -66,7 +72,8 @@ def get_company_data(ticker: str, ebitda_override: float = None):
             free_cash_flow=safe_float(info.get("freeCashflow")) if info.get("freeCashflow") else None,
             total_debt=safe_float(info.get("totalDebt")),
             beta=safe_float(info.get("beta"), default=1.0),
-            ebitda_user_provided=ebitda_user_provided
+            ebitda_user_provided=ebitda_user_provided,
+            revenue_growth=revenue_growth,
         )
 
     except HTTPException:

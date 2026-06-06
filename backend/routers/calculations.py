@@ -67,7 +67,7 @@ def calculate_dcf(company: CompanyData, wacc_data: dict,
         ebitda = company.normalized_ebitda or company.ebitda
         base_fcf = ebitda * (1 - DEFAULT_TAX_RATE) * 0.7
 
-    growth_rate = DEFAULT_GROWTH_RATE
+    growth_rate = company.revenue_growth
 
     # Project FCF for 5 years and discount
     projected_fcfs = []

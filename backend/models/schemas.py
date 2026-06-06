@@ -18,6 +18,7 @@ class CompanyData(BaseModel):
     total_debt: float
     beta: float
     ebitda_user_provided: bool = False
+    revenue_growth: float = 0.08
 
 class DCFResult(BaseModel):
     intrinsic_value: float
