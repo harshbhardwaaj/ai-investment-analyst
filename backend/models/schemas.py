@@ -64,3 +64,5 @@ class MemoResponse(BaseModel):
     comps: Optional[list[CompsData]]
     dcf: Optional[DCFResult]
     lbo: Optional[LBOResult]
+    wacc: Optional[dict] = None
+    precedent_transactions: Optional[list] = None

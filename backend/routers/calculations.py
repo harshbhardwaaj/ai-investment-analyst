@@ -76,19 +76,26 @@ def calculate_dcf(company: CompanyData, wacc_data: dict,
         discounted = fcf / (1 + wacc) ** year
         projected_fcfs.append(discounted)
 
-    # Terminal value (Gordon Growth)
+    # Terminal value (Gordon Growth) — requires wacc > terminal_growth_rate
+    if wacc <= terminal_growth_rate:
+        raise ValueError(
+            f"WACC ({wacc:.1%}) must exceed terminal growth rate ({terminal_growth_rate:.1%})"
+        )
     terminal_fcf = base_fcf * (1 + growth_rate) ** 5 * (1 + terminal_growth_rate)
     terminal_value = terminal_fcf / (wacc - terminal_growth_rate)
     discounted_terminal = terminal_value / (1 + wacc) ** 5
 
-    # Enterprise value → equity value
+    # Enterprise value → equity value (can be negative for highly leveraged companies)
     enterprise_value = sum(projected_fcfs) + discounted_terminal
     equity_value = enterprise_value - company.total_debt
 
     # Intrinsic value per share
     shares = company.market_cap / company.current_price if company.current_price > 0 else 1
     intrinsic_value = equity_value / shares
-    upside_pct = (intrinsic_value - company.current_price) / company.current_price * 100
+    upside_pct = (
+        (intrinsic_value - company.current_price) / company.current_price * 100
+        if company.current_price > 0 else 0.0
+    )
 
     return {
         "intrinsic_value": round(intrinsic_value, 2),
@@ -103,7 +110,7 @@ def calculate_sensitivity(company: CompanyData, wacc_data: dict) -> dict:
     base_wacc = wacc_data["wacc"]
     base_tgr = DEFAULT_TERMINAL_GROWTH_RATE
 
-    wacc_range = [base_wacc - 0.01, base_wacc, base_wacc + 0.01]
+    wacc_range = [max(0.001, base_wacc - 0.01), base_wacc, base_wacc + 0.01]
     tgr_range = [base_tgr + 0.005, base_tgr, base_tgr - 0.005]  # high to low
 
     matrix = []

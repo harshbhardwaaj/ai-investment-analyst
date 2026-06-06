@@ -2,15 +2,17 @@
 
 import { useState } from "react"
 import { CompanyData } from "@/lib/types"
+import { getCurrencySymbol } from "@/lib/currency"
 
-function formatCurrency(value: number, currency: string = "€"): string {
-    if (value >= 1e9) return `${currency}${(value / 1e9).toFixed(1)}B`
-    if (value >= 1e6) return `${currency}${(value / 1e6).toFixed(1)}M`
-    return `${currency}${value.toLocaleString()}`
+function formatCurrency(value: number, symbol: string): string {
+    if (value >= 1e9) return `${symbol}${(value / 1e9).toFixed(1)}B`
+    if (value >= 1e6) return `${symbol}${(value / 1e6).toFixed(1)}M`
+    return `${symbol}${value.toLocaleString()}`
 }
 
 export default function CompanySnapshot({ company }: { company: CompanyData }) {
     const [expanded, setExpanded] = useState(false)
+    const currencySymbol = getCurrencySymbol(company.ticker)
 
     return (
         <div className="mb-8">
@@ -33,19 +35,19 @@ export default function CompanySnapshot({ company }: { company: CompanyData }) {
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                     <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Market Cap</p>
                     <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                        {formatCurrency(company.market_cap)}
+                        {formatCurrency(company.market_cap, currencySymbol)}
                     </p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                     <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Revenue</p>
                     <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                        {formatCurrency(company.revenue)}
+                        {formatCurrency(company.revenue, currencySymbol)}
                     </p>
                 </div>
                 <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                     <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">EBITDA</p>
                     <p className="text-lg font-semibold text-gray-900 dark:text-gray-100 mt-1">
-                        {formatCurrency(company.normalized_ebitda ?? company.ebitda)}
+                        {formatCurrency(company.normalized_ebitda ?? company.ebitda, currencySymbol)}
                         {company.normalized_ebitda && (
                             <span className="text-xs text-gray-400 dark:text-gray-500 ml-1">normalized</span>
                         )}

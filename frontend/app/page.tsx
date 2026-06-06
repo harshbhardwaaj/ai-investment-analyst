@@ -137,9 +137,12 @@ export default function Home() {
                       <TradingComps
                           comps={memo.comps}
                           targetTicker={memo.company.ticker}
-                          targetEvEbitda={memo.wacc ? (memo.company.market_cap + memo.company.total_debt) / (memo.company.normalized_ebitda ?? memo.company.ebitda) : null}
-                          targetPe={memo.company.current_price / ((memo.company.ebitda * 0.7) / (memo.company.market_cap / memo.company.current_price))}
-                          targetEvRevenue={(memo.company.market_cap + memo.company.total_debt) / memo.company.revenue}
+                          targetEvEbitda={(() => {
+                              const ebitda = memo.company.normalized_ebitda ?? memo.company.ebitda
+                              return ebitda > 0 ? (memo.company.market_cap + memo.company.total_debt) / ebitda : null
+                          })()}
+                          targetPe={memo.company.ebitda > 0 ? memo.company.market_cap / (memo.company.ebitda * 0.7) : null}
+                          targetEvRevenue={memo.company.revenue > 0 ? (memo.company.market_cap + memo.company.total_debt) / memo.company.revenue : null}
                       />
                       <div className="border-t border-gray-100 dark:border-gray-800 my-6" />
                     </>

@@ -58,8 +58,8 @@ def get_memo(
     try:
         comps_response = financials.get_comps(ticker, company.sector, company.industry)
         comps_data = comps_response["comps"]
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[memo/{ticker}] comps fetch failed: {e}")
 
     calc_data = None
     try:
@@ -67,8 +67,8 @@ def get_memo(
             ticker, entry_multiple, debt_pct,
             interest_rate, exit_multiple, hold_period, ebitda_override
         )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[memo/{ticker}] calculations failed: {e}")
 
     precedent_txns = None
     try:
@@ -79,8 +79,8 @@ def get_memo(
             or txn_data.get(company.sector)
             or txn_data.get("Technology", [])
         )
-    except Exception:
-        pass
+    except Exception as e:
+        print(f"[memo/{ticker}] precedent transactions lookup failed: {e}")
 
     return {
         "company": company,

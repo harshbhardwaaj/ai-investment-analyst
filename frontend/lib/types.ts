@@ -40,6 +40,7 @@ export interface DCFResult {
     equity_risk_premium: number
     terminal_growth_rate: number
     growth_rate: number
+    base_fcf: number
     sensitivity_matrix: number[][]
     wacc_range: number[]
     tgr_range: number[]

@@ -24,7 +24,7 @@ export default function PrecedentTxns({ transactions }: { transactions: Preceden
                             <td className="px-4 py-3 text-gray-600 dark:text-gray-400">{txn.acquirer}</td>
                             <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{txn.year}</td>
                             <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">
-                                ${txn.deal_value_bn.toFixed(1)}B
+                                {txn.currency === "EUR" ? "€" : "$"}{txn.deal_value_bn.toFixed(1)}B
                             </td>
                             <td className="px-4 py-3 text-right text-gray-700 dark:text-gray-300">{txn.ev_ebitda.toFixed(1)}x</td>
                         </tr>

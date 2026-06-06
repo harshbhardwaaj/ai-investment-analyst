@@ -1,6 +1,7 @@
 "use client"
 import { useState } from "react"
 import { LBOResult } from "@/lib/types"
+import { getCurrencySymbol } from "@/lib/currency"
 
 interface LBOScreenProps {
     lbo: LBOResult
@@ -14,7 +15,8 @@ interface LBOScreenProps {
     }) => void
 }
 
-export default function LBOScreen({ lbo, onRecalculate }: LBOScreenProps) {
+export default function LBOScreen({ lbo, ticker, onRecalculate }: LBOScreenProps) {
+    const currencySymbol = getCurrencySymbol(ticker)
     const [entryMultiple, setEntryMultiple] = useState(lbo.entry_multiple)
     const [debtPct, setDebtPct] = useState(lbo.debt_pct * 100)
     const [interestRate, setInterestRate] = useState(
@@ -59,7 +61,7 @@ export default function LBOScreen({ lbo, onRecalculate }: LBOScreenProps) {
                 <div className="flex-1 bg-gray-50 dark:bg-gray-900 rounded-lg p-4">
                     <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">Entry EV</p>
                     <p className="text-2xl font-bold text-gray-900 dark:text-gray-100 mt-1">
-                        €{(lbo.entry_ev / 1e9).toFixed(1)}B
+                        {currencySymbol}{(lbo.entry_ev / 1e9).toFixed(1)}B
                     </p>
                 </div>
             </div>
