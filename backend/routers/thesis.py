@@ -17,21 +17,30 @@ def get_peer_tickers(ticker: str, sector: str = "", industry: str = ""):
         if ticker.upper() == "SAP.DE":
             return {"peers": ["ORCL", "CRM", "MSFT", "NOW", "WDAY"]}
 
-        prompt = f"""You are a financial analyst. Give me exactly 4 comparable public company tickers for:
-Company ticker: {ticker}
-Sector: {sector}
-Industry: {industry}
+        prompt = f"""You are a buy-side equity analyst. Return exactly 4 ticker symbols for the closest publicly traded peers of this company.
 
-Return ONLY a JSON object like this, no other text:
-{{"peers": ["TICK1", "TICK2", "TICK3", "TICK4"]}}
+Target company:
+- Ticker: {ticker}
+- Sector: {sector}
+- Industry: {industry}
 
-Rules:
-- Use valid Yahoo Finance ticker symbols
-- Pick genuine sector peers of similar size
-- No markdown, no explanation"""
+Requirements:
+- Peers must be in the SAME specific industry as the target: {industry}
+- Same core business model — not just same broad sector
+- Valid Yahoo Finance ticker symbols only
+- Prefer US-listed tickers (NYSE/NASDAQ)
+
+Critical exclusions:
+- Do NOT pick companies from adjacent industries even if in the same sector
+- Example: if target is semiconductor equipment, exclude EDA software companies
+- Example: if target is enterprise software, exclude hardware or semiconductor companies
+- Example: if target is auto manufacturing, exclude auto parts suppliers
+
+Return ONLY this JSON, no other text:
+{{"peers": ["TICK1", "TICK2", "TICK3", "TICK4"]}}"""
 
         message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
+            model="claude-sonnet-4-6",
             max_tokens=100,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -49,30 +58,52 @@ Rules:
 @router.post("/thesis", response_model=ThesisResult)
 def generate_thesis(company: CompanyData):
     try:
-        prompt = f"""You are a senior investment analyst. Based on the following company data, provide a concise investment analysis.
+        prompt = f"""You are a senior investment analyst at a top-tier private equity firm writing a concise investment memo section.
 
-Company: {company.name} ({company.ticker})
-Sector: {company.sector} | Industry: {company.industry}
-Current Price: {company.current_price:,.2f} | Market Cap: {company.market_cap/1e9:.1f}B
-Revenue: {company.revenue/1e9:.1f}B | EBITDA: {company.ebitda/1e9:.1f}B
-Gross Margin: {company.gross_margin*100:.1f}% | Operating Margin: {company.operating_margin*100:.1f}%
-Free Cash Flow: {(company.free_cash_flow or 0)/1e9:.1f}B
-Total Debt: {company.total_debt/1e9:.1f}B
-Beta: {company.beta}
+You have been given the following verified financial data for {company.name} ({company.ticker}). Use ONLY these numbers — do not invent, estimate, or reference any figures not listed below. If a metric is not listed, do not mention it.
 
-Respond ONLY with this JSON, no other text:
+COMPANY DATA:
+- Name: {company.name}
+- Ticker: {company.ticker}
+- Sector: {company.sector} | Industry: {company.industry}
+- Current Share Price: {company.current_price:,.2f}
+- Market Capitalisation: {company.market_cap/1e9:.1f}B
+- Annual Revenue: {company.revenue/1e9:.1f}B
+- EBITDA (reported): {company.ebitda/1e9:.1f}B
+- Normalised EBITDA: {(company.normalized_ebitda or company.ebitda)/1e9:.1f}B
+- Gross Margin: {company.gross_margin*100:.1f}%
+- Operating Margin: {company.operating_margin*100:.1f}%
+- Free Cash Flow: {(company.free_cash_flow or 0)/1e9:.1f}B
+- Total Debt: {company.total_debt/1e9:.1f}B
+- Beta (market sensitivity, NOT market cap): {company.beta:.3f}
+- Revenue Growth Rate: {company.revenue_growth*100:.1f}%
+
+TASK:
+Write a concise investment thesis with three components:
+
+1. BULL CASE: The strongest 1-2 sentence argument FOR investing. Reference specific metrics from above. Focus on what makes this company financially compelling.
+
+2. BEAR CASE: The strongest 1-2 sentence argument AGAINST investing. Reference specific metrics from above. Focus on genuine risks visible in the data.
+
+3. VERDICT: A single word — exactly one of: buy, watch, pass. Base this on the balance of evidence above.
+
+RULES:
+- Every number you cite must appear exactly as listed in the COMPANY DATA above
+- Beta ({company.beta:.3f}) is a volatility measure, NOT a size metric — do not confuse it with market cap or revenue
+- Market cap ({company.market_cap/1e9:.1f}B) and revenue ({company.revenue/1e9:.1f}B) are different numbers — cite them correctly
+- Do not use vague language like "strong fundamentals" without backing it with a specific number
+- Verdict must reflect the overall balance — do not default to "watch" without reason
+
+Respond ONLY with this JSON, no other text, no markdown:
 {{
-  "bull_case": "one sentence bull case referencing specific numbers",
-  "bear_case": "one sentence bear case referencing specific numbers",
+  "bull_case": "your bull case here",
+  "bear_case": "your bear case here",
   "verdict": "buy or watch or pass"
-}}
-
-Respond with ONLY the raw JSON object. No markdown, no code blocks, no explanation.
-Verdict must be exactly one of: buy, watch, pass."""
+}}"""
 
         message = client.messages.create(
-            model="claude-haiku-4-5-20251001",
-            max_tokens=300,
+            model="claude-sonnet-4-6",
+            max_tokens=500,
             messages=[{"role": "user", "content": prompt}]
         )
 
