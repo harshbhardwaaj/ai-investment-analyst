@@ -27,7 +27,9 @@ export default function Home() {
   })
 
   useEffect(() => {
-    handleFetch(DEMO_TICKER)
+    const params = new URLSearchParams(window.location.search)
+    const tickerParam = params.get("ticker")
+    handleFetch(tickerParam || DEMO_TICKER)
   }, [])
 
   const handleFetch = async (ticker: string, ebitdaOverride?: number, lbo = lboParams) => {
@@ -95,6 +97,29 @@ export default function Home() {
                       day: "numeric", month: "long", year: "numeric"
                     })}
                   </p>
+                </div>
+
+                <div className="border-b border-gray-100 dark:border-gray-800 mb-8 pb-2 flex items-center justify-between">
+                  <p className="text-xs text-gray-400 dark:text-gray-500 uppercase tracking-widest font-medium">
+                    Investment Memo
+                  </p>
+                  <div className="flex items-center gap-3">
+                    <p className="text-xs text-gray-400 dark:text-gray-500">
+                      {new Date().toLocaleDateString("en-GB", {
+                        day: "numeric", month: "long", year: "numeric"
+                      })}
+                    </p>
+                    <button
+                        onClick={() => {
+                          const url = `${window.location.origin}?ticker=${currentTicker}`
+                          navigator.clipboard.writeText(url)
+                              .then(() => alert("Link copied!"))
+                        }}
+                        className="text-xs text-gray-400 dark:text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 border border-gray-200 dark:border-gray-700 rounded px-2 py-1 transition-colors"
+                    >
+                      Copy link
+                    </button>
+                  </div>
                 </div>
 
                 <CompanySnapshot company={memo.company} />
