@@ -17,6 +17,17 @@ export interface CompanyData {
     ebitda_user_provided: boolean
 }
 
+export interface WACCData {
+    wacc: number
+    cost_of_equity: number
+    cost_of_debt: number
+    risk_free_rate: number
+    equity_risk_premium: number
+    beta: number
+    equity_weight: number
+    debt_weight: number
+}
+
 export interface DCFResult {
     intrinsic_value: number
     current_price: number
@@ -27,9 +38,13 @@ export interface DCFResult {
     risk_free_rate: number
     equity_risk_premium: number
     terminal_growth_rate: number
+    growth_rate: number
     sensitivity_matrix: number[][]
     wacc_range: number[]
     tgr_range: number[]
+    equity_weight: number
+    debt_weight: number
+    beta: number
 }
 
 export interface LBOResult {
@@ -65,4 +80,5 @@ export interface MemoResponse {
     comps: CompsData[] | null
     dcf: DCFResult | null
     lbo: LBOResult | null
+    wacc: WACCData | null
 }
