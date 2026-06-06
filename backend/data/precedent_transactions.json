@@ -43,14 +43,6 @@
   ],
   "Consumer Cyclical": [
     {
-      "target": "Manpower Group IT division",
-      "acquirer": "Various PE",
-      "year": 2021,
-      "deal_value_bn": 2.1,
-      "ev_ebitda": 11.2,
-      "currency": "USD"
-    },
-    {
       "target": "Hella GmbH",
       "acquirer": "Faurecia",
       "year": 2022,
