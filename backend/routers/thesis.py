@@ -77,6 +77,7 @@ COMPANY DATA:
 - Total Debt: {company.total_debt/1e9:.1f}B
 - Beta (market sensitivity, NOT market cap): {company.beta:.3f}
 - Revenue Growth Rate: {company.revenue_growth*100:.1f}%
+- Reporting Currency: {"EUR" if any(company.ticker.upper().endswith(s) for s in [".DE", ".PA", ".AS", ".MI", ".MC", ".L", ".SW"]) else "USD"}
 
 TASK:
 Write a concise investment thesis with three components:
@@ -93,6 +94,7 @@ RULES:
 - Market cap ({company.market_cap/1e9:.1f}B) and revenue ({company.revenue/1e9:.1f}B) are different numbers — cite them correctly
 - Do not use vague language like "strong fundamentals" without backing it with a specific number
 - Verdict must reflect the overall balance — do not default to "watch" without reason
+- Always use the correct Reporting Currency symbol when citing monetary figures — EUR (€) for European companies, USD ($) for US companies
 
 Respond ONLY with this JSON, no other text, no markdown:
 {{
