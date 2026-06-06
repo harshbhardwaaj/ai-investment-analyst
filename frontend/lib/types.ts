@@ -15,6 +15,7 @@ export interface CompanyData {
     total_debt: number
     beta: number
     ebitda_user_provided: boolean
+    revenue_growth: number
 }
 
 export interface WACCData {
