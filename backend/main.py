@@ -74,8 +74,11 @@ def get_memo(
     try:
         with open("data/precedent_transactions.json", "r") as f:
             txn_data = json_lib.load(f)
-        sector = company.sector
-        precedent_txns = txn_data.get(sector, txn_data.get("Technology", []))
+        precedent_txns = (
+            txn_data.get(company.industry)
+            or txn_data.get(company.sector)
+            or txn_data.get("Technology", [])
+        )
     except Exception:
         pass
 

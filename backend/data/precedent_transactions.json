@@ -49,6 +49,67 @@
       "deal_value_bn": 2.1,
       "ev_ebitda": 11.2,
       "currency": "USD"
+    },
+    {
+      "target": "Hella GmbH",
+      "acquirer": "Faurecia",
+      "year": 2022,
+      "deal_value_bn": 6.7,
+      "ev_ebitda": 11.0,
+      "currency": "EUR"
+    }
+  ],
+  "Healthcare": [
+    {
+      "target": "Celgene",
+      "acquirer": "Bristol-Myers Squibb",
+      "year": 2019,
+      "deal_value_bn": 90.0,
+      "ev_ebitda": 17.0,
+      "currency": "USD"
+    },
+    {
+      "target": "Alexion Pharmaceuticals",
+      "acquirer": "AstraZeneca",
+      "year": 2021,
+      "deal_value_bn": 39.0,
+      "ev_ebitda": 16.3,
+      "currency": "USD"
+    },
+    {
+      "_note": "38.5x EV/EBITDA is an estimate — Seagen's EBITDA was minimal relative to deal size; multiple reflects pipeline/future value acquisition, not current earnings power. Deal value ($43B) is verified.",
+      "target": "Seagen",
+      "acquirer": "Pfizer",
+      "year": 2023,
+      "deal_value_bn": 43.0,
+      "ev_ebitda": 38.5,
+      "currency": "USD"
+    }
+  ],
+  "Semiconductor Equipment & Materials": [
+    {
+      "target": "Orbotech",
+      "acquirer": "KLA Corporation",
+      "year": 2019,
+      "deal_value_bn": 3.2,
+      "ev_ebitda": 22.0,
+      "currency": "USD"
+    },
+    {
+      "target": "Coherent (II-VI)",
+      "acquirer": "II-VI Incorporated",
+      "year": 2022,
+      "deal_value_bn": 6.8,
+      "ev_ebitda": 18.5,
+      "currency": "USD"
+    },
+    {
+      "target": "Berliner Glas",
+      "acquirer": "ASML",
+      "year": 2020,
+      "deal_value_bn": 0.6,
+      "ev_ebitda": 14.0,
+      "currency": "EUR"
     }
   ]
 }
