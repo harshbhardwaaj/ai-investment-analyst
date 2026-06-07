@@ -19,12 +19,12 @@ export const metadata = {
         title: "AI Investment Analyst",
         description: "Generate PE-grade investment memos in seconds — DCF, LBO, trading comps, precedent transactions.",
         url: "https://ai-investment-analyst-harsh.vercel.app",
-        siteName: "AI Investment Analyst",
+        siteName: "by Harsh Bhardwaj",
         images: [
             {
-                url: "https://ai-investment-analyst-harsh.vercel.app/og-image.jpeg",
-                width: 2129,
-                height: 1198,
+                url: "https://ai-investment-analyst-harsh.vercel.app/ai_investment_analyst_thumbnail.png",
+                width: 1200,
+                height: 627,
                 alt: "AI Investment Analyst",
             },
         ],
@@ -34,7 +34,7 @@ export const metadata = {
         card: "summary_large_image",
         title: "AI Investment Analyst",
         description: "Generate PE-grade investment memos in seconds.",
-        images: ["https://ai-investment-analyst-harsh.vercel.app/og-image.jpeg"],
+        images: ["https://ai-investment-analyst-harsh.vercel.app/ai_investment_analyst_thumbnail.png"],
     },
 }
 
