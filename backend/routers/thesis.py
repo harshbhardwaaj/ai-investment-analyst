@@ -40,7 +40,7 @@ Return ONLY this JSON, no other text:
 {{"peers": ["TICK1", "TICK2", "TICK3", "TICK4"]}}"""
 
         message = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-sonnet-5",
             max_tokens=100,
             messages=[{"role": "user", "content": prompt}]
         )
@@ -104,7 +104,7 @@ Respond ONLY with this JSON, no other text, no markdown:
 }}"""
 
         message = client.messages.create(
-            model="claude-sonnet-4-6",
+            model="claude-sonnet-5",
             max_tokens=500,
             messages=[{"role": "user", "content": prompt}]
         )
