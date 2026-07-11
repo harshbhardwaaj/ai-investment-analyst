@@ -44,10 +44,21 @@ async function relay(targetUrl, method, cookie) {
   });
 }
 
+// Exact allowlist, not a suffix check -- "endsWith('yahoo.com')" would also
+// match an attacker-registered host like "evil-yahoo.com" and relay our
+// cached cookie there. Only these hosts are ones yfinance actually calls.
+const ALLOWED_HOSTS = new Set([
+  "query1.finance.yahoo.com",
+  "query2.finance.yahoo.com",
+  "fc.yahoo.com",
+  "guce.yahoo.com",
+  "consent.yahoo.com",
+]);
+
 export default {
   async fetch(request) {
     const targetHost = request.headers.get("X-Proxy-Target");
-    if (!targetHost || !targetHost.endsWith("yahoo.com")) {
+    if (!targetHost || !ALLOWED_HOSTS.has(targetHost)) {
       return new Response("Missing or disallowed X-Proxy-Target", { status: 400 });
     }
 

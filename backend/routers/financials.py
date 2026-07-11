@@ -31,7 +31,7 @@ _YF_PROXY_WORKER_URL = os.environ.get("YF_PROXY_WORKER_URL")
 class _WorkerProxySession(requests.Session):
     def send(self, request, **kwargs):
         parts = urlsplit(request.url)
-        if parts.hostname and parts.hostname.endswith("yahoo.com"):
+        if parts.hostname and (parts.hostname == "yahoo.com" or parts.hostname.endswith(".yahoo.com")):
             worker = urlsplit(_YF_PROXY_WORKER_URL)
             request.headers["X-Proxy-Target"] = parts.hostname
             request.url = urlunsplit((worker.scheme, worker.netloc, parts.path, parts.query, parts.fragment))
@@ -39,9 +39,6 @@ class _WorkerProxySession(requests.Session):
 
 
 _yf_proxy_session = _WorkerProxySession() if _YF_PROXY_WORKER_URL else None
-
-def _yf_session():
-    return _yf_proxy_session
 
 def _cached_fetch(cache_key, fetch_fn):
     now = time.monotonic()
@@ -61,10 +58,10 @@ def _cached_fetch(cache_key, fetch_fn):
         raise
 
 def _get_yf_info(ticker: str):
-    return _cached_fetch(("info", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_session()).info)
+    return _cached_fetch(("info", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_proxy_session).info)
 
 def _get_yf_financials(ticker: str):
-    return _cached_fetch(("financials", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_session()).financials)
+    return _cached_fetch(("financials", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_proxy_session).financials)
 
 def safe_float(value, default=0.0):
     try:
