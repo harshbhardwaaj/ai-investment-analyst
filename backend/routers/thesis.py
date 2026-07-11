@@ -1,5 +1,6 @@
 import os
 import json
+import time
 import anthropic
 from fastapi import APIRouter, HTTPException
 from models.schemas import ThesisResult, CompanyData
@@ -9,6 +10,15 @@ load_dotenv()
 
 router = APIRouter()
 client = anthropic.Anthropic(api_key=os.environ.get("ANTHROPIC_API_KEY"))
+
+# The frontend fires a memo request for the demo ticker on every page load,
+# with no user action required (see frontend/app/page.tsx's mount effect) —
+# so every visit, refresh, or crawler hit was billing a fresh Claude call.
+# Cache the thesis per ticker for as long as the underlying company data
+# stays cached (financials.py's yfinance TTL) — regenerating it sooner just
+# pays for an identical answer.
+_thesis_cache = {}
+_THESIS_CACHE_TTL_SECONDS = 20 * 60
 
 @router.get("/peers/{ticker}")
 def get_peer_tickers(ticker: str, sector: str = "", industry: str = ""):
@@ -57,6 +67,14 @@ Return ONLY this JSON, no other text:
 
 @router.post("/thesis", response_model=ThesisResult)
 def generate_thesis(company: CompanyData):
+    cache_key = company.ticker.upper()
+    now = time.monotonic()
+    cached = _thesis_cache.get(cache_key)
+    if cached is not None:
+        value, expires_at = cached
+        if now < expires_at:
+            return value
+
     try:
         prompt = f"""You are a senior investment analyst at a top-tier private equity firm writing a concise investment memo section.
 
@@ -116,11 +134,13 @@ Respond ONLY with this JSON, no other text, no markdown:
         response_text = response_text.strip()
         data = json.loads(response_text)
 
-        return ThesisResult(
+        result = ThesisResult(
             bull_case=data["bull_case"],
             bear_case=data["bear_case"],
             verdict=data["verdict"]
         )
+        _thesis_cache[cache_key] = (result, now + _THESIS_CACHE_TTL_SECONDS)
+        return result
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Thesis generation failed: {str(e)}")
