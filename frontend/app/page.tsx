@@ -37,6 +37,9 @@ export default function Home() {
     const params = new URLSearchParams(window.location.search)
     const tickerParam = params.get("ticker")
     handleFetch(tickerParam || DEMO_TICKER)
+    // Intentionally mount-only: re-running on every handleFetch identity change
+    // would re-trigger the initial fetch on unrelated state updates.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
   const loadingSecondsRef = useRef(0)
@@ -90,21 +93,7 @@ export default function Home() {
     pollUntilAwake()
 
     try {
-      const params = new URLSearchParams({
-        entry_multiple: lbo.entry_multiple.toString(),
-        debt_pct: lbo.debt_pct.toString(),
-        interest_rate: lbo.interest_rate.toString(),
-        exit_multiple: lbo.exit_multiple.toString(),
-        hold_period: lbo.hold_period.toString(),
-      })
-      if (ebitdaOverride !== undefined) params.append("ebitda_override", ebitdaOverride.toString())
-
-      const res = await fetch(`${API_BASE}/api/memo/${ticker}?${params}`)
-      if (!res.ok) {
-        const err = await res.json()
-        throw new Error(err.detail || "Failed to fetch memo")
-      }
-      const data = await res.json()
+      const data = await fetchMemo(ticker, lbo, ebitdaOverride)
       setMemo(data)
     } catch (err: unknown) {
       const message = err instanceof Error ? err.message : "Something went wrong"

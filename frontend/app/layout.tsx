@@ -12,7 +12,7 @@ const geistMono = Geist_Mono({
   subsets: ["latin"],
 });
 
-export const metadata = {
+export const metadata: Metadata = {
     title: "AI Investment Analyst",
     description: "Generate PE-grade investment memos in seconds - DCF, LBO, trading comps, precedent transactions. Powered by real financial data.",
     openGraph: {
