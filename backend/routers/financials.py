@@ -1,8 +1,41 @@
+import time
 import yfinance as yf
 from fastapi import APIRouter, HTTPException
 from models.schemas import CompanyData
 
 router = APIRouter()
+
+# In-memory cache for yfinance lookups. Yahoo Finance rate-limits per outbound
+# IP (i.e. per Render instance, not per visitor), so every avoidable call
+# matters — this also means a single memo request no longer fetches the same
+# ticker's data twice (main.py's get_memo + calculations.get_calculations
+# both fetch the target company).
+_yf_cache = {}
+_CACHE_TTL_SECONDS = 20 * 60   # successful lookups stay fresh for 20 min
+_FAILURE_TTL_SECONDS = 60      # don't hammer Yahoo again for a minute after a failure
+
+def _cached_fetch(cache_key, fetch_fn):
+    now = time.monotonic()
+    entry = _yf_cache.get(cache_key)
+    if entry is not None:
+        value, expires_at, is_error = entry
+        if now < expires_at:
+            if is_error:
+                raise value
+            return value
+    try:
+        value = fetch_fn()
+        _yf_cache[cache_key] = (value, now + _CACHE_TTL_SECONDS, False)
+        return value
+    except Exception as e:
+        _yf_cache[cache_key] = (e, now + _FAILURE_TTL_SECONDS, True)
+        raise
+
+def _get_yf_info(ticker: str):
+    return _cached_fetch(("info", ticker.upper()), lambda: yf.Ticker(ticker).info)
+
+def _get_yf_financials(ticker: str):
+    return _cached_fetch(("financials", ticker.upper()), lambda: yf.Ticker(ticker).financials)
 
 def safe_float(value, default=0.0):
     try:
@@ -15,8 +48,7 @@ def safe_float(value, default=0.0):
 @router.get("/company/{ticker}", response_model=CompanyData)
 def get_company_data(ticker: str, ebitda_override: float = None):
     try:
-        stock = yf.Ticker(ticker)
-        info = stock.info
+        info = _get_yf_info(ticker)
 
         # Validate ticker — check for a meaningful response
         if not info or info.get("quoteType") is None:
@@ -25,7 +57,7 @@ def get_company_data(ticker: str, ebitda_override: float = None):
         # Try to get Normalized EBITDA from financials dataframe
         normalized_ebitda = None
         try:
-            financials = stock.financials
+            financials = _get_yf_financials(ticker)
             if "Normalized EBITDA" in financials.index:
                 normalized_ebitda = float(financials.loc["Normalized EBITDA"].iloc[0])
         except Exception:
@@ -91,8 +123,7 @@ def get_comps(ticker: str, sector: str = "", industry: str = ""):
         comps = []
         for peer in peer_tickers:
             try:
-                stock = yf.Ticker(peer)
-                info = stock.info
+                info = _get_yf_info(peer)
                 if not info or info.get("quoteType") is None:
                     continue
                 comps.append({
