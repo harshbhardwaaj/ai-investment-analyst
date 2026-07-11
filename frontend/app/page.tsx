@@ -1,5 +1,5 @@
 "use client"
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { fetchMemo } from "@/lib/api"
 import { MemoResponse } from "@/lib/types"
 import CompanySnapshot from "./components/CompanySnapshot"
@@ -12,14 +12,17 @@ import LBOScreen from "./components/LBOScreen"
 import PrecedentTxns from "./components/PrecedentTxns"
 
 const DEMO_TICKER = "SAP.DE"
-// Rough real-world ceiling for a cold start, used only to pace the fake progress fill.
-const WARMUP_ESTIMATE_SECONDS = 45
+// Rough real-world ceilings, used only to pace the fake progress fill.
+const WARMUP_ESTIMATE_SECONDS = 45 // server waking up from idle
+const GENERATE_ESTIMATE_SECONDS = 12 // fetching data + calling the model, once awake
+const WARMUP_PHASE_CAP = 60 // % of the bar spent on "waking up" before "generating" takes over
 
 export default function Home() {
   const [memo, setMemo] = useState<MemoResponse | null>(null)
   const [loading, setLoading] = useState(false)
   const [loadingSeconds, setLoadingSeconds] = useState(0)
   const [backendAwake, setBackendAwake] = useState(true)
+  const [awokeAtSecond, setAwokeAtSecond] = useState<number | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [currentTicker, setCurrentTicker] = useState(DEMO_TICKER)
   const [lboParams, setLboParams] = useState({
@@ -36,12 +39,21 @@ export default function Home() {
     handleFetch(tickerParam || DEMO_TICKER)
   }, [])
 
+  const loadingSecondsRef = useRef(0)
+
   useEffect(() => {
     if (!loading) {
       setLoadingSeconds(0)
+      loadingSecondsRef.current = 0
       return
     }
-    const interval = setInterval(() => setLoadingSeconds(s => s + 1), 1000)
+    const interval = setInterval(() => {
+      setLoadingSeconds(s => {
+        const next = s + 1
+        loadingSecondsRef.current = next
+        return next
+      })
+    }, 1000)
     return () => clearInterval(interval)
   }, [loading])
 
@@ -50,6 +62,7 @@ export default function Home() {
     setError(null)
     setCurrentTicker(ticker)
     setBackendAwake(false)
+    setAwokeAtSecond(null)
 
     const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
 
@@ -65,6 +78,7 @@ export default function Home() {
           clearTimeout(timeout)
           if (res.ok) {
             setBackendAwake(true)
+            setAwokeAtSecond(loadingSecondsRef.current)
             return
           }
         } catch {
@@ -134,19 +148,25 @@ export default function Home() {
 
           <TickerInput onSubmit={handleFetch} loading={loading} error={error} />
 
-          {loading && (
-              <div className="text-center py-20 px-4">
-                <div className="max-w-xs mx-auto h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
-                  <div
-                      className="h-full rounded-full bg-gray-900 dark:bg-gray-100 transition-all duration-700 ease-out"
-                      style={{ width: `${backendAwake ? 100 : Math.min(92, (loadingSeconds / WARMUP_ESTIMATE_SECONDS) * 100)}%` }}
-                  />
-                </div>
-                <p className="mt-4 text-gray-400 dark:text-gray-500 text-sm">
-                  {backendAwake ? "Generating memo..." : "Getting things ready..."}
-                </p>
-              </div>
-          )}
+          {loading && (() => {
+              const secondsSinceAwake = awokeAtSecond !== null ? Math.max(0, loadingSeconds - awokeAtSecond) : 0
+              const progressPercent = !backendAwake
+                  ? Math.min(WARMUP_PHASE_CAP, (loadingSeconds / WARMUP_ESTIMATE_SECONDS) * WARMUP_PHASE_CAP)
+                  : Math.min(96, WARMUP_PHASE_CAP + (secondsSinceAwake / GENERATE_ESTIMATE_SECONDS) * (96 - WARMUP_PHASE_CAP))
+              return (
+                  <div className="text-center py-20 px-4">
+                    <div className="max-w-xs mx-auto h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                      <div
+                          className="h-full rounded-full bg-gray-900 dark:bg-gray-100 transition-all duration-700 ease-out"
+                          style={{ width: `${progressPercent}%` }}
+                      />
+                    </div>
+                    <p className="mt-4 text-gray-400 dark:text-gray-500 text-sm">
+                      {backendAwake ? "Generating memo..." : "Getting things ready..."}
+                    </p>
+                  </div>
+              )
+          })()}
 
           {memo && !loading && (
               <div>
