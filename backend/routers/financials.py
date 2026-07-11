@@ -1,5 +1,8 @@
+import os
 import time
+import requests
 import yfinance as yf
+from urllib.parse import urlsplit, urlunsplit
 from fastapi import APIRouter, HTTPException
 from models.schemas import CompanyData
 
@@ -13,6 +16,32 @@ router = APIRouter()
 _yf_cache = {}
 _CACHE_TTL_SECONDS = 20 * 60   # successful lookups stay fresh for 20 min
 _FAILURE_TTL_SECONDS = 60      # don't hammer Yahoo again for a minute after a failure
+
+# Optional relay for outbound Yahoo requests. Render's free tier shares outbound
+# IPs across every customer in the region, so once that pool gets flagged by
+# Yahoo there's nothing our own request pattern can do about it. If
+# YF_PROXY_WORKER_URL is set (a Cloudflare Worker — see infra/yf-proxy-worker.js),
+# every request to *.yahoo.com is rewritten to go through it instead: the Worker
+# makes the real call to Yahoo from Cloudflare's edge, so Yahoo sees Cloudflare's
+# IP rather than Render's blocked one. Falls back to yfinance's own default
+# session (direct connection) when unset.
+_YF_PROXY_WORKER_URL = os.environ.get("YF_PROXY_WORKER_URL")
+
+
+class _WorkerProxySession(requests.Session):
+    def send(self, request, **kwargs):
+        parts = urlsplit(request.url)
+        if parts.hostname and parts.hostname.endswith("yahoo.com"):
+            worker = urlsplit(_YF_PROXY_WORKER_URL)
+            request.headers["X-Proxy-Target"] = parts.hostname
+            request.url = urlunsplit((worker.scheme, worker.netloc, parts.path, parts.query, parts.fragment))
+        return super().send(request, **kwargs)
+
+
+_yf_proxy_session = _WorkerProxySession() if _YF_PROXY_WORKER_URL else None
+
+def _yf_session():
+    return _yf_proxy_session
 
 def _cached_fetch(cache_key, fetch_fn):
     now = time.monotonic()
@@ -32,10 +61,10 @@ def _cached_fetch(cache_key, fetch_fn):
         raise
 
 def _get_yf_info(ticker: str):
-    return _cached_fetch(("info", ticker.upper()), lambda: yf.Ticker(ticker).info)
+    return _cached_fetch(("info", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_session()).info)
 
 def _get_yf_financials(ticker: str):
-    return _cached_fetch(("financials", ticker.upper()), lambda: yf.Ticker(ticker).financials)
+    return _cached_fetch(("financials", ticker.upper()), lambda: yf.Ticker(ticker, session=_yf_session()).financials)
 
 def safe_float(value, default=0.0):
     try:
