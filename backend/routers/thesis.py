@@ -46,7 +46,7 @@ Return ONLY this JSON, no other text:
         )
 
         import re
-        response_text = message.content[0].text.strip()
+        response_text = next(block.text for block in message.content if block.type == "text").strip()
         response_text = re.sub(r'```json\s*', '', response_text)
         response_text = re.sub(r'```\s*', '', response_text)
         data = json.loads(response_text.strip())
@@ -110,7 +110,7 @@ Respond ONLY with this JSON, no other text, no markdown:
         )
 
         import re
-        response_text = message.content[0].text.strip()
+        response_text = next(block.text for block in message.content if block.type == "text").strip()
         response_text = re.sub(r'```json\s*', '', response_text)
         response_text = re.sub(r'```\s*', '', response_text)
         response_text = response_text.strip()

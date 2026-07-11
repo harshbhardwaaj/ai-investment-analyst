@@ -12,10 +12,14 @@ import LBOScreen from "./components/LBOScreen"
 import PrecedentTxns from "./components/PrecedentTxns"
 
 const DEMO_TICKER = "SAP.DE"
+// Rough real-world ceiling for a cold start, used only to pace the fake progress fill.
+const WARMUP_ESTIMATE_SECONDS = 45
 
 export default function Home() {
   const [memo, setMemo] = useState<MemoResponse | null>(null)
   const [loading, setLoading] = useState(false)
+  const [loadingSeconds, setLoadingSeconds] = useState(0)
+  const [backendAwake, setBackendAwake] = useState(true)
   const [error, setError] = useState<string | null>(null)
   const [currentTicker, setCurrentTicker] = useState(DEMO_TICKER)
   const [lboParams, setLboParams] = useState({
@@ -32,10 +36,45 @@ export default function Home() {
     handleFetch(tickerParam || DEMO_TICKER)
   }, [])
 
+  useEffect(() => {
+    if (!loading) {
+      setLoadingSeconds(0)
+      return
+    }
+    const interval = setInterval(() => setLoadingSeconds(s => s + 1), 1000)
+    return () => clearInterval(interval)
+  }, [loading])
+
   const handleFetch = async (ticker: string, ebitdaOverride?: number, lbo = lboParams) => {
     setLoading(true)
     setError(null)
     setCurrentTicker(ticker)
+    setBackendAwake(false)
+
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
+
+    // Ping the lightweight root endpoint until the server actually responds, so the
+    // "waking up" message reflects the real backend state instead of a guessed delay.
+    let polling = true
+    const pollUntilAwake = async () => {
+      while (polling) {
+        try {
+          const controller = new AbortController()
+          const timeout = setTimeout(() => controller.abort(), 4000)
+          const res = await fetch(API_BASE, { signal: controller.signal })
+          clearTimeout(timeout)
+          if (res.ok) {
+            setBackendAwake(true)
+            return
+          }
+        } catch {
+          // still asleep or unreachable — keep retrying
+        }
+        await new Promise(r => setTimeout(r, 1500))
+      }
+    }
+    pollUntilAwake()
+
     try {
       const params = new URLSearchParams({
         entry_multiple: lbo.entry_multiple.toString(),
@@ -46,7 +85,6 @@ export default function Home() {
       })
       if (ebitdaOverride !== undefined) params.append("ebitda_override", ebitdaOverride.toString())
 
-      const API_BASE = process.env.NEXT_PUBLIC_API_URL || "http://127.0.0.1:8000"
       const res = await fetch(`${API_BASE}/api/memo/${ticker}?${params}`)
       if (!res.ok) {
         const err = await res.json()
@@ -58,6 +96,7 @@ export default function Home() {
       const message = err instanceof Error ? err.message : "Something went wrong"
       setError(message)
     } finally {
+      polling = false
       setLoading(false)
     }
   }
@@ -96,8 +135,16 @@ export default function Home() {
           <TickerInput onSubmit={handleFetch} loading={loading} error={error} />
 
           {loading && (
-              <div className="text-center py-20 text-gray-400 dark:text-gray-500 text-sm">
-                Generating memo...
+              <div className="text-center py-20 px-4">
+                <div className="max-w-xs mx-auto h-1.5 rounded-full bg-gray-100 dark:bg-gray-800 overflow-hidden">
+                  <div
+                      className="h-full rounded-full bg-gray-900 dark:bg-gray-100 transition-all duration-700 ease-out"
+                      style={{ width: `${backendAwake ? 100 : Math.min(92, (loadingSeconds / WARMUP_ESTIMATE_SECONDS) * 100)}%` }}
+                  />
+                </div>
+                <p className="mt-4 text-gray-400 dark:text-gray-500 text-sm">
+                  {backendAwake ? "Generating memo..." : "Getting things ready..."}
+                </p>
               </div>
           )}
 
