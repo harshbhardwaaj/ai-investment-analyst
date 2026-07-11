@@ -1,11 +1,11 @@
 
 # Python
 
-backend/__pycache__/
+backend/**/__pycache__/
 
 backend/.venv/
 
-backend/*.pyc
+backend/**/*.pyc
 
 backend/.env
 
